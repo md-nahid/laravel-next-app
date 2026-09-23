@@ -1,0 +1,15 @@
+---
+description: Frontend is Next.js in a separate repo; Laravel is API-only here
+alwaysApply: true
+---
+
+# Frontend architecture
+
+The **consumer UI is Next.js** and lives in **another repository**, not this one. This repo is the **Laravel backend only** (JSON API, Fortify headless auth, Sanctum SPA cookies, broadcasting).
+
+When building features here:
+
+- Prefer **JSON APIs**, API Resources, and **named routes** suitable for an SPA (`Accept: application/json`).
+- Do **not** assume Blade/Vite/Inertia for user-facing UI; skip adding frontend-only assets unless explicitly requested.
+- Coordinate **CORS**, **`SANCTUM_STATEFUL_DOMAINS`**, **`SESSION_DOMAIN`**, Reverb/Echo env vars, and **`APP_URL`** with the Next.js project so cookie auth and `/broadcasting/auth` work.
+- Frontend integration notes live in **`docs/chat-frontend.md`** (and related backend plans in **`docs/chat-backend.md`**).

@@ -1,0 +1,36 @@
+---
+description: Laravel backend API integration from this Next.js app
+globs: "**/src/_api/**,**/src/**/*query*,**/src/**/*api*"
+alwaysApply: false
+---
+
+# Laravel API (Next.js frontend)
+
+## Base URL
+
+- Set `NEXT_PUBLIC_API_URL` to the Laravel app **origin** only (no trailing slash), e.g. `http://localhost:8000` or `https://api.example.com`.
+- Call Laravel routes with paths like `/api/...` or `/sanctum/csrf-cookie` as needed.
+
+## HTTP client
+
+- Use the shared `api` instance from `@/_api/factory` (Axios). Do not create ad-hoc `axios.create()` unless there is a strong reason.
+- Laravel returns JSON validation errors when `Accept: application/json` is sent (the factory sets this).
+
+## Auth patterns
+
+- **Sanctum SPA (cookie)**: keep `withCredentials: true` on `api`; obtain CSRF cookie from Laravel (`GET /sanctum/csrf-cookie`) before `POST`/`PUT`/`PATCH`/`DELETE` to same domain or configured stateful domains; use `credentials: 'include'` for native `fetch` if used.
+- **Token / Bearer**: attach `Authorization: Bearer <token>` per request or via an interceptor on `api`; you may set `withCredentials: false` if cookies are unused.
+
+## TanStack Query
+
+- Prefer `useQuery` / `useMutation` with query keys that include route params and filters (e.g. `['messages', conversationId]`).
+- Use `api` inside `queryFn` / `mutationFn`; map Laravel payloads in one place when shaping view models.
+
+## Errors
+
+- **422** validation: read `errors` from `getLaravelErrorPayload(error)`; keys are field names, values are string arrays (first message is the usual UX default).
+- **401**: handle session expiry / redirect to login; `isUnauthenticatedError` helper is available.
+
+## Naming
+
+- Laravel uses snake_case in JSON by default unless API Resources transform keys. Type frontend models to match the actual API responses.
