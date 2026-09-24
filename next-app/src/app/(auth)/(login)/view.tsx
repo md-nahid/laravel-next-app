@@ -17,13 +17,13 @@ import {
 import { routeConfig } from "@/config/route.config"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { FieldDescription } from "@/components/ui/field";
 
 export function View({ className, ...props }: ComponentProps<"div">) {
   const router = useRouter()
   const { mutate } = useMutation(
     apiMutation.login.mutation({
       onSuccess: () => {
-        toast.success('Login successful')
         router.push('/dashboard')
       },
       onError: (error) => {
@@ -75,12 +75,16 @@ export function View({ className, ...props }: ComponentProps<"div">) {
             <form.AppForm>
               <form.Submit label="Login" />
             </form.AppForm>
-            <Link
-              href={routeConfig.register.url}
-              className="text-center underline underline-offset-2 hover:text-primary"
-            >
-              Sign up
-            </Link>
+            
+            <FieldDescription className="text-center">
+                  Don't have an account?{" "}
+                  <Link
+                    href="/register"
+                    className="underline underline-offset-2 hover:text-primary"
+                  >
+                    Sign Up
+                  </Link>
+                </FieldDescription>
           </Form>
         </CardContent>
       </Card>

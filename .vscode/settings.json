@@ -1,13 +1,8 @@
 {
   "biome.enabled": true,
-  "biome.configurationPath": "biome.json",
-  "biome.lsp.bin": "${workspaceFolder}/node_modules/.bin/biome",
-  "editor.defaultFormatter": "biomejs.biome",
+  "biome.configurationPath": "/Users/nahid/Desktop/practice/laravel-next-app/next-app/biome.json",
+  "biome.lsp.bin": "/Users/nahid/Desktop/practice/laravel-next-app/next-app/node_modules/.bin/biome",
   "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit",
-    "source.organizeImports.biome": "explicit"
-  },
   "[typescript]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true
@@ -32,6 +27,10 @@
   },
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
   },
   "js/ts.experimental.useTsgo": false
 }

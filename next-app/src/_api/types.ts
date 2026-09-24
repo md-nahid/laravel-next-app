@@ -38,3 +38,4 @@ export type SearchParams = {
 }
 
 export type LoginResponse = { two_factor: boolean; message: string }
+

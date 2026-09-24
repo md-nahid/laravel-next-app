@@ -12,6 +12,7 @@ export const _queryKeys = {
   me: "/me",
   login: "/login",
   logout: "/logout",
+  register: '/register'
 }
 
 export const apiQuery = {
@@ -41,4 +42,14 @@ export const apiMutation = {
       }),
   },
   logout: mutationBuilder(_queryKeys.logout),
+  register: {
+    mutation: (options: MutateOptions<LoginResponse, APIError, unknown>) =>
+      mutationOptions({
+        mutationFn: async (input) => {
+          await fetcher.get<boolean>(_queryKeys.csrf)
+          return axios.post(_queryKeys.register, input).then((res) => res.data)
+        },
+        ...options,
+      }),
+  },
 }

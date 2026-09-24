@@ -1,13 +1,11 @@
-import Link from "next/link"
-import Image from "next/image"
+import { NavActions } from "@/components/nav-actions"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
 export function Header() {
   return (
-    <header className="bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 z-50">
-      <Link href="/" className="size-10">
-        <Image src="/logo.svg" alt="logo" width={100} height={100} />
-      </Link>
-
+    <header className="flex h-14 items-center justify-between gap-2 border-b px-3">
+      <SidebarTrigger />
+      <NavActions />
     </header>
   )
 }

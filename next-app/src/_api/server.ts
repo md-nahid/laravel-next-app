@@ -9,7 +9,6 @@ export async function getCurrentUser() {
       headers: Object.fromEntries(await headers()),
     })
     .then((res) => {
-      console.log(res.data)
       return res.data
     })
     .catch(() => {
