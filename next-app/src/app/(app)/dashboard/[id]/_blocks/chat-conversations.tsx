@@ -21,7 +21,6 @@ export function ChatConversations({ id }: { id: string }) {
       apiQuery.chat.getConversation.query({
         param: id,
         enabled: !!id.toString(),
-        refetchOnWindowFocus: true,
         staleTime: 0,
       })
     )
