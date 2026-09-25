@@ -5,8 +5,14 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import type * as React from "react"
 import { apiQuery } from "@/_api/client"
-import { Sidebar, SidebarContent, SidebarHeader } from "@/components/ui/sidebar"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+} from "@/components/ui/sidebar"
 import { routeConfig } from "@/config/route.config"
+import { NavUser } from "./nav-user"
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Button } from "./ui/button"
 
@@ -51,6 +57,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </Button>
         ))}
       </SidebarContent>
+      <SidebarFooter className="pb-6">
+        <NavUser />
+      </SidebarFooter>
     </Sidebar>
   )
 }

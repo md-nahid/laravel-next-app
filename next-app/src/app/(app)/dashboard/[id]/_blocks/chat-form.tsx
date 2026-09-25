@@ -41,40 +41,38 @@ export function ChatForm({ id }: { id: string }) {
   })
 
   return (
-    <div className="sticky bottom-6 z-50 w-full">
-      <Card className="mx-auto w-full">
-        <CardContent>
-          <Form handleSubmit={form.handleSubmit} className="w-full">
-            <InputGroup>
-              <form.AppField name="message">
-                {(field) => (
-                  <InputGroupInput
-                    placeholder="Write your message..."
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
+    <Card className="mx-auto mt-4 w-full max-w-2xl">
+      <CardContent>
+        <Form handleSubmit={form.handleSubmit} className="w-full">
+          <InputGroup>
+            <form.AppField name="message">
+              {(field) => (
+                <InputGroupInput
+                  placeholder="Write your message..."
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+              )}
+            </form.AppField>
+            <InputGroupAddon align="block-end" className="pt-1">
+              <InputGroupButton
+                type="submit"
+                variant="default"
+                size="icon-sm"
+                className="ml-auto"
+                disabled={isPending}
+              >
+                {isPending ? (
+                  <Loader className="animate-spin" />
+                ) : (
+                  <ArrowUpIcon />
                 )}
-              </form.AppField>
-              <InputGroupAddon align="block-end" className="pt-1">
-                <InputGroupButton
-                  type="submit"
-                  variant="default"
-                  size="icon-sm"
-                  className="ml-auto"
-                  disabled={isPending}
-                >
-                  {isPending ? (
-                    <Loader className="animate-spin" />
-                  ) : (
-                    <ArrowUpIcon />
-                  )}
-                  <span className="sr-only">Send</span>
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+                <span className="sr-only">Send</span>
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
+        </Form>
+      </CardContent>
+    </Card>
   )
 }

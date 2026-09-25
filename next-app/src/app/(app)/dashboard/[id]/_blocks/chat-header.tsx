@@ -21,7 +21,7 @@ export function ChatHeader({ id }: { id: string }) {
     })
   )
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-background px-6 py-4">
+    <div className="flex items-center justify-between border-b px-6 py-4">
       <div className="flex items-center gap-2">
         <Avatar>
           <AvatarFallback>{data?.name.slice(0, 1)}</AvatarFallback>

@@ -53,7 +53,7 @@ export function ChatConversations({ id }: { id: string }) {
   }, [currentUser, id, queryClient])
 
   return (
-    <div className="flex min-h-full flex-col justify-end py-6">
+    <div className="flex min-h-full flex-col justify-end pt-6">
       {hasNextPage && (
         <Button
           className="mx-auto mb-6"
@@ -81,7 +81,7 @@ function ChatConversation({ conversation }: { conversation: Conversation }) {
   return (
     <div
       className={cn(
-        "mb-5 flex items-end gap-2.5",
+        "mx-auto mb-5 flex w-full max-w-2xl items-end gap-2.5",
         isOutgoing ? "justify-end" : "justify-start"
       )}
     >
