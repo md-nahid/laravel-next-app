@@ -1,23 +1,69 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { CheckCheck } from "lucide-react"
+import { useEffect } from "react"
 import { apiQuery } from "@/_api/client"
 import type { Conversation } from "@/_api/types"
+import { Button } from "@/components/ui/button"
+import { echo } from "@/lib/echo"
 import { cn } from "@/lib/utils"
 
 export function ChatConversations({ id }: { id: string }) {
-  const { data: paginatedData } = useQuery(
-    apiQuery.chat.getConversation.query({
-      param: id,
-      enabled: !!id.toString(),
-    })
-  )
+  const queryClient = useQueryClient()
+  const { data: currentUser } = useQuery(apiQuery.me.query())
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useInfiniteQuery(
+      apiQuery.chat.getConversation.query({
+        param: id,
+        enabled: !!id.toString(),
+        refetchOnWindowFocus: true,
+        staleTime: 0,
+      })
+    )
 
-  const { data } = paginatedData ?? {}
+  useEffect(() => {
+    if (!currentUser || !echo) {
+      return
+    }
+
+    const activeEcho = echo
+    const channelName = `users.${currentUser.id}`
+
+    activeEcho
+      .private(channelName)
+      .listen(".message.sent", (conversation: Conversation) => {
+        if (
+          conversation.sender_id === Number(id) ||
+          conversation.receiver_id === Number(id)
+        ) {
+          queryClient.invalidateQueries({
+            queryKey: apiQuery.chat.getConversation.key(),
+          })
+        }
+      })
+
+    return () => {
+      activeEcho.leave(channelName)
+    }
+  }, [currentUser, id, queryClient])
 
   return (
     <div className="flex min-h-full flex-col justify-end py-6">
+      {hasNextPage && (
+        <Button
+          className="mx-auto mb-6"
+          disabled={isFetchingNextPage}
+          onClick={() => fetchNextPage()}
+          variant="outline"
+        >
+          {isFetchingNextPage ? "Loading..." : "Load older messages"}
+        </Button>
+      )}
       {data?.map((conversation) => (
         <ChatConversation conversation={conversation} key={conversation.id} />
       ))}

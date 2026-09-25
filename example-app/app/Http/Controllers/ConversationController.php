@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
 use App\Models\Conversation;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ConversationController extends Controller
 {
@@ -15,7 +16,7 @@ class ConversationController extends Controller
     //     ]);
 
     //     $authenticatedUserId = $request->user()->id;
-        
+
     //     $conversations = Conversation::query()
     //         ->where('sender_id', $authenticatedUserId)
     //         ->orWhere('receiver_id', $authenticatedUserId)
@@ -70,6 +71,8 @@ class ConversationController extends Controller
             'receiver_id' => $receiverId,
             'message' => $validatedData['message'],
         ]);
+
+        MessageSent::dispatch($conversation);
 
         return response()->json($conversation, 201);
     }

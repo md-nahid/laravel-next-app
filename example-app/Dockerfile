@@ -9,6 +9,7 @@ RUN apt-get update \
     && docker-php-ext-install \
         pdo_pgsql \
         bcmath \
+        pcntl \
         zip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -19,7 +20,7 @@ WORKDIR /var/www/html
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
 
-EXPOSE 8000
+EXPOSE 8000 8080
 
 ENTRYPOINT ["entrypoint"]
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000", "--no-reload"]

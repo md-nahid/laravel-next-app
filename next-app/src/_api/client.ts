@@ -5,13 +5,12 @@ import {
 } from "@tanstack/react-query"
 import { axios, fetcher } from "./api"
 import { mutationBuilder } from "./mutation-factory"
-import { queryBuilder } from "./query-factory"
+import { infiniteQueryBuilder, queryBuilder } from "./query-factory"
 import type {
   APIError,
   Conversation,
   LoginResponse,
   MutationResponse,
-  PaginationInterface,
   User,
 } from "./types"
 
@@ -43,7 +42,7 @@ export const apiQuery = {
   selectedUser: queryBuilder<User>(_queryKeys.users),
 
   chat: {
-    getConversation: queryBuilder<PaginationInterface<Conversation>>(
+    getConversation: infiniteQueryBuilder<Conversation>(
       _queryKeys.conversations
     ),
   },

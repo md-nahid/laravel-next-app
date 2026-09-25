@@ -15,6 +15,7 @@ return [
 
     'paths' => [
         'api/*',
+        'broadcasting/auth',
         'sanctum/csrf-cookie',
         'login',
         'logout',
