@@ -39,3 +39,18 @@ export type SearchParams = {
 
 export type LoginResponse = { two_factor: boolean; message: string }
 
+export type User = {
+  id: number
+  name: string
+  email: string
+}
+
+export type Conversation = {
+  id: number
+  sender_id: number
+  receiver_id: number
+  message: string
+  is_mine: boolean
+  created_at: string
+  updated_at: string
+}

@@ -1,8 +1,13 @@
 "use client"
 
+import { useMutation } from "@tanstack/react-query"
+import { Loader } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type { ComponentProps } from "react"
+import { toast } from "sonner"
 import { z } from "zod"
+import { apiMutation } from "@/_api/client"
 import { Form } from "@/components/app-form"
 import { useAppForm } from "@/components/app-form/form"
 import { Button } from "@/components/ui/button"
@@ -14,40 +19,37 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
-import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { apiMutation } from "@/_api/client";
-import { toast } from "sonner";
-import { Loader } from "lucide-react";
 
 const registerSchema = z
   .object({
-    name: z.string().trim().min(1, {error: "Name is required"}),
-    email: z.email({error: "Enter a valid email address"}),
-    password: z.string().min(8, {error: "Password must be at least 8 characters"}),
-    password_confirmation: z.string().min(1, {error: "Please confirm your password"}),
+    name: z.string().trim().min(1, { error: "Name is required" }),
+    email: z.email({ error: "Enter a valid email address" }),
+    password: z
+      .string()
+      .min(8, { error: "Password must be at least 8 characters" }),
+    password_confirmation: z
+      .string()
+      .min(1, { error: "Please confirm your password" }),
   })
   .refine((values) => values.password === values.password_confirmation, {
     message: "Passwords do not match",
     path: ["password_confirmation"],
   })
 
-
-
 export function View({ className, ...props }: ComponentProps<"div">) {
   const router = useRouter()
   const { mutate, isPending } = useMutation(
     apiMutation.register.mutation({
-      onSuccess: ({message}) => {
-        toast.success(message ?? 'Registered Successfully')
-        router.push('/dashboard')
+      onSuccess: ({ message }) => {
+        toast.success(message ?? "Registered Successfully")
+        router.push("/dashboard")
       },
       onError: (error) => {
         toast.error(error.response?.data?.message)
       },
     })
   )
-  
+
   const form = useAppForm({
     defaultValues: {
       name: "",

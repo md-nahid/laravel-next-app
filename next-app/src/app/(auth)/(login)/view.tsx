@@ -2,6 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type { ComponentProps } from "react"
 import { toast } from "sonner"
 import { apiMutation } from "@/_api/client"
@@ -14,17 +15,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { routeConfig } from "@/config/route.config"
+import { FieldDescription } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
-import { useRouter } from "next/navigation"
-import { FieldDescription } from "@/components/ui/field";
 
 export function View({ className, ...props }: ComponentProps<"div">) {
   const router = useRouter()
-  const { mutate } = useMutation(
+
+  const { mutate, isPending } = useMutation(
     apiMutation.login.mutation({
       onSuccess: () => {
-        router.push('/dashboard')
+        router.push("/dashboard")
       },
       onError: (error) => {
         toast.error(error.response?.data?.message)
@@ -73,18 +73,18 @@ export function View({ className, ...props }: ComponentProps<"div">) {
               {(field) => <field.PasswordField label="Password" required />}
             </form.AppField>
             <form.AppForm>
-              <form.Submit label="Login" />
+              <form.Submit label="Login" isPending={isPending} />
             </form.AppForm>
-            
+
             <FieldDescription className="text-center">
-                  Don't have an account?{" "}
-                  <Link
-                    href="/register"
-                    className="underline underline-offset-2 hover:text-primary"
-                  >
-                    Sign Up
-                  </Link>
-                </FieldDescription>
+              Don't have an account?{" "}
+              <Link
+                href="/register"
+                className="underline underline-offset-2 hover:text-primary"
+              >
+                Sign Up
+              </Link>
+            </FieldDescription>
           </Form>
         </CardContent>
       </Card>

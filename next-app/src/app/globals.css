@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
+@theme {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);

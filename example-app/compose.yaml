@@ -12,6 +12,11 @@ services:
       - "${APP_PORT:-8000}:8000"
     environment:
       APP_URL: http://localhost:${APP_PORT:-8000}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-example_app}
+      DB_USERNAME: ${DB_USERNAME:-laravel}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
     volumes:
       - .:/var/www/html
       - vendor:/var/www/html/vendor

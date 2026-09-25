@@ -7,4 +7,12 @@ export const routeConfig = {
     icon: "",
     url: "/register",
   },
+  dashboard: {
+    icon: "",
+    url: "/dashboard",
+  },
+  chat: {
+    icon: "",
+    url: (id: string) => `/dashboard/${id}`,
+  },
 }

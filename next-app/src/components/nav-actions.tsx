@@ -1,129 +1,46 @@
 "use client"
 
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { apiMutation, apiQuery } from "@/_api/client"
+import { Avatar, AvatarFallback } from "./ui/avatar"
+import { Button } from "./ui/button"
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  BellIcon,
-  ChartLineIcon,
-  CopyIcon,
-  CornerUpLeftIcon,
-  CornerUpRightIcon,
-  FileTextIcon,
-  GalleryVerticalEndIcon,
-  LinkIcon,
-  MoreHorizontalIcon,
-  Settings2Icon,
-  Trash2Icon,
-  TrashIcon,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 
-const data = [
-  [
-    {
-      label: "Customize Page",
-      icon: <Settings2Icon />,
-    },
-    {
-      label: "Turn into wiki",
-      icon: <FileTextIcon />,
-    },
-  ],
-  [
-    {
-      label: "Copy Link",
-      icon: <LinkIcon />,
-    },
-    {
-      label: "Duplicate",
-      icon: <CopyIcon />,
-    },
-    {
-      label: "Move to",
-      icon: <CornerUpRightIcon />,
-    },
-    {
-      label: "Move to Trash",
-      icon: <Trash2Icon />,
-    },
-  ],
-  [
-    {
-      label: "Undo",
-      icon: <CornerUpLeftIcon />,
-    },
-    {
-      label: "View analytics",
-      icon: <ChartLineIcon />,
-    },
-    {
-      label: "Version History",
-      icon: <GalleryVerticalEndIcon />,
-    },
-    {
-      label: "Show delete pages",
-      icon: <TrashIcon />,
-    },
-    {
-      label: "Notifications",
-      icon: <BellIcon />,
-    },
-  ],
-  [
-    {
-      label: "Import",
-      icon: <ArrowUpIcon />,
-    },
-    {
-      label: "Export",
-      icon: <ArrowDownIcon />,
-    },
-  ],
-]
 export function NavActions() {
+  const router = useRouter()
+  const { mutate, isPending } = useMutation(
+    apiMutation.logout.mutation({
+      onSuccess: () => {
+        // queryClient.invalidateQueries([ApiAuthEndpoints.me]);
+        router.push("/")
+      },
+    })
+  )
+  const { data } = useQuery(apiQuery.me.query())
   return (
-    <Popover defaultOpen={false}>
-      <PopoverTrigger render={<Button variant="outline" size="icon" />}>
-        <MoreHorizontalIcon />
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-56 overflow-hidden rounded-lg p-0"
-        align="end"
-      >
-        <Sidebar collapsible="none" className="bg-transparent">
-          <SidebarContent>
-            {data.map((group, index) => (
-              <SidebarGroup key={index} className="border-b last:border-none">
-                <SidebarGroupContent className="gap-0">
-                  <SidebarMenu>
-                    {group.map((item, index) => (
-                      <SidebarMenuItem key={index}>
-                        <SidebarMenuButton>
-                          {item.icon} <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            ))}
-          </SidebarContent>
-        </Sidebar>
-      </PopoverContent>
-    </Popover>
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Avatar>
+              <AvatarFallback>{data?.name.slice(0, 1)}</AvatarFallback>
+            </Avatar>
+          </Button>
+        }
+      />
+
+      <DropdownMenuContent className="w-40" align="end">
+        <DropdownMenuItem onClick={() => mutate()} disabled={isPending}>
+          <LogOut /> Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

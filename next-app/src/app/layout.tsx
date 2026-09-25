@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google"
 
+// @ts-expect-error CSS is resolved by Next.js at build time.
 import "./globals.css"
 import { Providers } from "@/app/providers"
 import { cn } from "@/lib/utils"
