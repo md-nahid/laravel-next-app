@@ -4,13 +4,14 @@ import {
   queryOptions,
 } from "@tanstack/react-query"
 import { axios, fetcher } from "./api"
-import { mutationBuilder } from "./mutation-factory"
+import { mutationBuilder, mutationBuilderDelete } from "./mutation-factory"
 import { infiniteQueryBuilder, queryBuilder } from "./query-factory"
 import type {
   APIError,
   Conversation,
   LoginResponse,
   MutationResponse,
+  SelectedUser,
   User,
 } from "./types"
 
@@ -21,6 +22,7 @@ export const _queryKeys = {
   logout: "/logout",
   register: "/register",
   users: "/users",
+  blocks: "/blocks",
   conversations: "/conversations",
 }
 
@@ -39,7 +41,7 @@ export const apiQuery = {
   },
 
   users: queryBuilder<User[]>(_queryKeys.users),
-  selectedUser: queryBuilder<User>(_queryKeys.users),
+  selectedUser: queryBuilder<SelectedUser>(_queryKeys.users),
 
   chat: {
     getConversation: infiniteQueryBuilder<Conversation>(
@@ -80,6 +82,14 @@ export const apiMutation = {
   chat: {
     send: mutationBuilder<MutationResponse, APIError, unknown>(
       _queryKeys.conversations
+    ),
+  },
+  blocks: {
+    block: mutationBuilder<MutationResponse, APIError, Record<string, never>>(
+      _queryKeys.blocks
+    ),
+    unblock: mutationBuilderDelete<MutationResponse, APIError>(
+      _queryKeys.blocks
     ),
   },
 }

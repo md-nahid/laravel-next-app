@@ -8,7 +8,8 @@ import {
 import { CheckCheck } from "lucide-react"
 import { useEffect } from "react"
 import { apiQuery } from "@/_api/client"
-import type { Conversation } from "@/_api/types"
+import type { Conversation, ConversationBroadcast } from "@/_api/types"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { echo } from "@/lib/echo"
 import { cn } from "@/lib/utils"
@@ -35,7 +36,7 @@ export function ChatConversations({ id }: { id: string }) {
 
     activeEcho
       .private(channelName)
-      .listen(".message.sent", (conversation: Conversation) => {
+      .listen(".message.sent", (conversation: ConversationBroadcast) => {
         if (
           conversation.sender_id === Number(id) ||
           conversation.receiver_id === Number(id)
@@ -84,6 +85,17 @@ function ChatConversation({ conversation }: { conversation: Conversation }) {
         isOutgoing ? "justify-end" : "justify-start"
       )}
     >
+      {!isOutgoing && (
+        <Avatar
+          aria-label={conversation.sender.name}
+          className="mb-5"
+          size="sm"
+        >
+          <AvatarFallback>
+            {conversation.sender.name.slice(0, 1).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      )}
       <div
         className={cn(
           "flex max-w-lg flex-col gap-1",

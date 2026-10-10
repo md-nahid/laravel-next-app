@@ -1,6 +1,6 @@
 "use client"
 
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ArrowUpIcon, Loader } from "lucide-react"
 import { toast } from "sonner"
 import { apiMutation, apiQuery } from "@/_api/client"
@@ -16,17 +16,27 @@ import {
 
 export function ChatForm({ id }: { id: string }) {
   const queryClient = useQueryClient()
+  const { data: selectedUser } = useQuery(
+    apiQuery.selectedUser.query({
+      param: id,
+      enabled: !!id.toString(),
+    })
+  )
+
+  const isBlockedByReceiver = Boolean(selectedUser?.is_blocking_me)
+
   const { mutate, isPending } = useMutation(
     apiMutation.chat.send.mutation({
       param: id,
-      onSuccess: () => {
+      onSuccess: (response) => {
         form.reset()
+        toast.success(response.message)
         queryClient.invalidateQueries({
           queryKey: apiQuery.chat.getConversation.key(),
         })
       },
       onError: (error) => {
-        toast.error(error.response.data.message)
+        toast.error(error.response?.data?.message)
       },
     })
   )
@@ -44,13 +54,23 @@ export function ChatForm({ id }: { id: string }) {
     <Card className="mx-auto mt-4 w-full max-w-2xl">
       <CardContent>
         <Form handleSubmit={form.handleSubmit} className="w-full">
+          {isBlockedByReceiver ? (
+            <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-destructive text-sm">
+              You are blocked by this user and cannot send messages.
+            </div>
+          ) : null}
           <InputGroup>
             <form.AppField name="message">
               {(field) => (
                 <InputGroupInput
-                  placeholder="Write your message..."
+                  placeholder={
+                    isBlockedByReceiver
+                      ? "You are blocked by this user"
+                      : "Write your message..."
+                  }
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  disabled={isBlockedByReceiver || isPending}
                 />
               )}
             </form.AppField>
@@ -60,7 +80,7 @@ export function ChatForm({ id }: { id: string }) {
                 variant="default"
                 size="icon-sm"
                 className="ml-auto"
-                disabled={isPending}
+                disabled={isBlockedByReceiver || isPending}
               >
                 {isPending ? (
                   <Loader className="animate-spin" />

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\MessageSent;
 use App\Models\Conversation;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -34,6 +35,7 @@ class ConversationController extends Controller
 
         $authenticatedUserId = $request->user()->id;
         $conversations = Conversation::query()
+            ->with(['sender', 'receiver'])
             ->where(function ($query) use ($authenticatedUserId, $conversationPartnerId): void {
                 $query->where('sender_id', $authenticatedUserId)
                     ->where('receiver_id', $conversationPartnerId);
@@ -65,6 +67,16 @@ class ConversationController extends Controller
         $validatedData = $request->validate([
             'message' => ['required', 'string', 'max:500'],
         ]);
+
+        $receiver = User::query()->findOrFail($receiverId);
+
+        abort_if($receiver->is($request->user()), 422, 'You cannot message yourself.');
+
+        abort_if(
+            $receiver->blockedUsers()->whereKey($request->user()->getKey())->exists(),
+            403,
+            'You cannot message this user.'
+        );
 
         $conversation = Conversation::create([
             'sender_id' => $request->user()->id,

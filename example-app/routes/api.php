@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\TokenController;
+use App\Http\Controllers\Api\UserBlockController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\ConversationController;
 use Illuminate\Http\Request;
@@ -20,6 +21,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::post('/blocks/{userId}', [UserBlockController::class, 'store']);
+    Route::delete('/blocks/{userId}', [UserBlockController::class, 'destroy']);
 
     // Route::get('/conversations', [ConversationController::class, 'index']);
     Route::get('/conversations/{conversationPartnerId}', [ConversationController::class, 'between']);
