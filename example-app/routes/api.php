@@ -26,5 +26,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     // Route::get('/conversations', [ConversationController::class, 'index']);
     Route::get('/conversations/{conversationPartnerId}', [ConversationController::class, 'between']);
+    Route::delete('/conversations/{conversationPartnerId}', [ConversationController::class, 'destroy']);
     Route::post('/conversations/{receiverId}', [ConversationController::class, 'store']);
 });

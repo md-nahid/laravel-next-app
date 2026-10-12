@@ -7,6 +7,7 @@ use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ConversationController extends Controller
 {
@@ -34,6 +35,11 @@ class ConversationController extends Controller
         ]);
 
         $authenticatedUserId = $request->user()->id;
+        $deletedThroughMessageId = DB::table('conversation_deletions')
+            ->where('user_id', $authenticatedUserId)
+            ->where('partner_id', $conversationPartnerId)
+            ->value('deleted_through_message_id');
+
         $conversations = Conversation::query()
             ->with(['sender', 'receiver'])
             ->where(function ($query) use ($authenticatedUserId, $conversationPartnerId): void {
@@ -44,6 +50,10 @@ class ConversationController extends Controller
                         ->where('receiver_id', $authenticatedUserId);
                 });
             })
+            ->when(
+                $deletedThroughMessageId !== null,
+                fn ($query) => $query->where('id', '>', $deletedThroughMessageId),
+            )
             ->latest()
             ->paginate($validatedData['per_page'] ?? 100);
 
@@ -60,6 +70,39 @@ class ConversationController extends Controller
         );
 
         return response()->json($conversations);
+    }
+
+    public function destroy(Request $request, int $conversationPartnerId): JsonResponse
+    {
+        $user = $request->user();
+        $partner = User::query()->findOrFail($conversationPartnerId);
+
+        abort_if($partner->is($user), 422, 'You cannot delete a conversation with yourself.');
+
+        $latestMessageId = Conversation::query()
+            ->where(function ($query) use ($user, $partner): void {
+                $query->where('sender_id', $user->id)
+                    ->where('receiver_id', $partner->id);
+                $query->orWhere(function ($query) use ($user, $partner): void {
+                    $query->where('sender_id', $partner->id)
+                        ->where('receiver_id', $user->id);
+                });
+            })
+            ->max('id');
+
+        DB::table('conversation_deletions')->upsert(
+            [[
+                'user_id' => $user->id,
+                'partner_id' => $partner->id,
+                'deleted_through_message_id' => $latestMessageId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]],
+            ['user_id', 'partner_id'],
+            ['deleted_through_message_id', 'updated_at'],
+        );
+
+        return response()->json(['message' => 'Conversation deleted.']);
     }
 
     public function store(Request $request, int $receiverId): JsonResponse

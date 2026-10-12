@@ -83,6 +83,9 @@ export const apiMutation = {
     send: mutationBuilder<MutationResponse, APIError, unknown>(
       _queryKeys.conversations
     ),
+    delete: mutationBuilderDelete<MutationResponse, APIError>(
+      _queryKeys.conversations
+    ),
   },
   blocks: {
     block: mutationBuilder<MutationResponse, APIError, Record<string, never>>(

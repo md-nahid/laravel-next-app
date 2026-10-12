@@ -210,21 +210,11 @@ composer run test              # PHPUnit (also runs lint:check)
 composer run ci:check          # full CI bundle
 ```
 
-## Deploying to Laravel Cloud
+## Free test deployment
 
-The Cloud CLI is already installed globally and the `deploying-laravel-cloud` skill is registered in `boost.json`.
-
-```bash
-cloud login                    # one-time browser OAuth
-cloud init                     # link this directory to a Cloud project + environment
-cloud deploy                   # deploy current branch
-```
-
-Useful commands: `cloud environments`, `cloud logs`, `cloud env:pull`, `cloud env:push`, `cloud db:shell`, `cloud --help`.
-
-CLI docs: [https://cloud.laravel.com/docs/api/cli](https://cloud.laravel.com/docs/api/cli)
-
-When deploying, set the equivalent of `FRONTEND_URL` and `SANCTUM_STATEFUL_DOMAINS` to your production Next.js domain, and flip `SESSION_SECURE_COOKIE=true`.
+See the repository's [free hosting guide](../docs/free-hosting.md) for a
+temporary Vercel + Render + Neon deployment, including the Sanctum and
+websocket configuration.
 
 ## Project layout (cheatsheet)
 
@@ -250,4 +240,3 @@ docker/entrypoint.sh    # bootstraps deps, migrations, then serves the API
 AGENTS.md               # Laravel Boost guidelines (loaded by AI agents)
 boost.json              # Boost configuration
 ```
-

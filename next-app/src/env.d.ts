@@ -1,6 +1,6 @@
 declare namespace NodeJS {
   interface ProcessEnv {
-    /** Laravel app origin, e.g. https://api.example.com (no trailing slash) */
+    /** Public frontend URL with the same-origin API proxy path, e.g. https://app.vercel.app/backend */
     NEXT_PUBLIC_REST_API_ENDPOINT: string
   }
 }

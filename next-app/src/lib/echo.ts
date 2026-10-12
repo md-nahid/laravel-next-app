@@ -12,6 +12,8 @@ declare global {
 
 const apiEndpoint = process.env.NEXT_PUBLIC_REST_API_ENDPOINT ?? ""
 const apiOrigin = apiEndpoint.replace(/\/api\/?$/, "")
+const secureConnection = process.env.NEXT_PUBLIC_REVERB_SCHEME === "https"
+const reverbPort = Number(process.env.NEXT_PUBLIC_REVERB_PORT || 8080)
 
 const echo =
   typeof window === "undefined"
@@ -23,9 +25,9 @@ const echo =
           broadcaster: "reverb",
           key: process.env.NEXT_PUBLIC_REVERB_APP_KEY,
           wsHost: process.env.NEXT_PUBLIC_REVERB_HOST,
-          wsPort: Number(process.env.NEXT_PUBLIC_REVERB_PORT),
-          wssPort: Number(process.env.NEXT_PUBLIC_REVERB_PORT),
-          forceTLS: false,
+          wsPort: reverbPort,
+          wssPort: reverbPort,
+          forceTLS: secureConnection,
           enabledTransports: ["ws", "wss"],
           authorizer: (channel) => ({
             authorize: (socketId, callback) => {

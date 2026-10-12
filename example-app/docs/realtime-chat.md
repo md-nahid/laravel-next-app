@@ -279,6 +279,18 @@ The sender separately invalidates the same query in `chat-form.tsx` after the
 `POST` request succeeds. This prevents the sender from waiting for a broadcast
 that is intentionally delivered only to the recipient.
 
+## Conversation deletion
+
+`DELETE /api/conversations/{conversationPartnerId}` hides the conversation's
+existing messages from the authenticated user. It does not delete message rows
+or change the other participant's history. Laravel records a per-user cutoff at
+the highest existing message ID for the pair.
+
+The existing `GET /api/conversations/{conversationPartnerId}` endpoint omits
+messages through that cutoff. Messages stored after deletion are visible to the
+user as a fresh conversation; the old messages remain hidden. The endpoint
+requires authentication.
+
 ## Production notes
 
 Use HTTPS and secure WebSockets in production. Replace the local Reverb credentials and host with production values, set `REVERB_SCHEME=https`, and configure the production domain in `FRONTEND_URL` and `SANCTUM_STATEFUL_DOMAINS`. Reverb and a queue worker must remain running in production.
