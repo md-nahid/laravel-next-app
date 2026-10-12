@@ -9,14 +9,13 @@ import { infiniteQueryBuilder, queryBuilder } from "./query-factory"
 import type {
   APIError,
   Conversation,
-  LoginResponse,
   MutationResponse,
   SelectedUser,
   User,
 } from "./types"
 
 export const _queryKeys = {
-  csrf: "/sanctum/csrf-cookie",
+  csrf: "csrf-cookie",
   me: "/user",
   login: "/login",
   logout: "/logout",
@@ -52,11 +51,11 @@ export const apiQuery = {
 
 export const apiMutation = {
   login: {
-    mutation: (options: MutateOptions<LoginResponse, APIError, unknown>) =>
+    mutation: (options: MutateOptions<unknown, APIError, unknown>) =>
       mutationOptions({
         mutationFn: async (input) => {
           await fetcher.get<boolean>(_queryKeys.csrf)
-          return axios.post(_queryKeys.login, input).then((res) => res.data)
+          return fetcher.post(_queryKeys.login, input).then((res) => res.data)
         },
         ...options,
       }),
@@ -64,16 +63,19 @@ export const apiMutation = {
   logout: {
     mutation: (options: MutateOptions) =>
       mutationOptions({
-        mutationFn: () => axios.post(_queryKeys.logout).then((res) => res.data),
+        mutationFn: () =>
+          fetcher.post(_queryKeys.logout).then((res) => res.data),
         ...options,
       }),
   },
   register: {
-    mutation: (options: MutateOptions<LoginResponse, APIError, unknown>) =>
+    mutation: (options: MutateOptions<unknown, APIError, unknown>) =>
       mutationOptions({
         mutationFn: async (input) => {
           await fetcher.get<boolean>(_queryKeys.csrf)
-          return axios.post(_queryKeys.register, input).then((res) => res.data)
+          return fetcher
+            .post(_queryKeys.register, input)
+            .then((res) => res.data)
         },
         ...options,
       }),

@@ -1,22 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.14/schema.json",
   "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "files": {
-    "ignoreUnknown": true,
-    "includes": [
-      "**",
-      "!**/.next",
-      "!**/.turbo",
-      "!**/dist",
-      "!**/build",
-      "!**/coverage",
-      "!**/node_modules",
-      "!**/next-env.d.ts"
-    ]
+    "enabled": false
   },
   "formatter": {
     "enabled": true,
@@ -24,6 +9,18 @@
     "indentWidth": 2,
     "lineEnding": "lf",
     "lineWidth": 80
+  },
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
+    "formatter": {
+      "quoteStyle": "double",
+      "jsxQuoteStyle": "double",
+      "semicolons": "asNeeded",
+      "trailingCommas": "es5",
+      "arrowParentheses": "always"
+    }
   },
   "css": {
     "parser": {
@@ -33,15 +30,6 @@
     "formatter": {
       "enabled": true,
       "quoteStyle": "double"
-    }
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double",
-      "jsxQuoteStyle": "double",
-      "semicolons": "asNeeded",
-      "trailingCommas": "es5",
-      "arrowParentheses": "always"
     }
   },
   "linter": {
@@ -77,7 +65,19 @@
   },
   "overrides": [
     {
-      "includes": ["**/src/components/ui/**"],
+      "includes": ["nest-app/**/*.ts"],
+      "formatter": {
+        "enabled": false
+      },
+      "linter": {
+        "enabled": false
+      },
+      "assist": {
+        "enabled": false
+      }
+    },
+    {
+      "includes": ["next-app/src/components/ui/**"],
       "linter": {
         "rules": {
           "a11y": {
@@ -101,7 +101,7 @@
       }
     },
     {
-      "includes": ["**/src/components/forms/form-string-field.tsx"],
+      "includes": ["next-app/src/components/forms/form-string-field.tsx"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -110,13 +110,5 @@
         }
       }
     }
-  ],
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  }
+  ]
 }

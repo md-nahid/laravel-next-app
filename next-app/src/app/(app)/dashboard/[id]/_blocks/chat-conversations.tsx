@@ -1,56 +1,23 @@
 "use client"
 
-import {
-  useInfiniteQuery,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query"
+import { useInfiniteQuery } from "@tanstack/react-query"
 import { CheckCheck } from "lucide-react"
-import { useEffect } from "react"
 import { apiQuery } from "@/_api/client"
-import type { Conversation, ConversationBroadcast } from "@/_api/types"
+import type { Conversation } from "@/_api/types"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { echo } from "@/lib/echo"
 import { cn } from "@/lib/utils"
 
 export function ChatConversations({ id }: { id: string }) {
-  const queryClient = useQueryClient()
-  const { data: currentUser } = useQuery(apiQuery.me.query())
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useInfiniteQuery(
       apiQuery.chat.getConversation.query({
         param: id,
         enabled: !!id.toString(),
+        refetchInterval: 5_000,
         staleTime: 0,
       })
     )
-
-  useEffect(() => {
-    if (!currentUser || !echo) {
-      return
-    }
-
-    const activeEcho = echo
-    const channelName = `users.${currentUser.id}`
-
-    activeEcho
-      .private(channelName)
-      .listen(".message.sent", (conversation: ConversationBroadcast) => {
-        if (
-          conversation.sender_id === Number(id) ||
-          conversation.receiver_id === Number(id)
-        ) {
-          queryClient.invalidateQueries({
-            queryKey: apiQuery.chat.getConversation.key(),
-          })
-        }
-      })
-
-    return () => {
-      activeEcho.leave(channelName)
-    }
-  }, [currentUser, id, queryClient])
 
   return (
     <div className="flex min-h-full flex-col justify-end pt-6">

@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google"
 
+// @ts-ignore Next.js handles this side-effect stylesheet import.
 import "./globals.css"
 import { Providers } from "@/app/providers"
 import { cn } from "@/lib/utils"

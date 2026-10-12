@@ -3,7 +3,7 @@ import Axios, { type AxiosError } from "axios"
 const axiosConfig = {
   timeout: 50_000,
   headers: {
-    "X-Requested-With": "XMLHttpRequest", //it's recommended to set this header for laravel api
+    "X-Requested-With": "XMLHttpRequest",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -34,9 +34,12 @@ export const axios = Axios.create({
   ...axiosConfig,
 })
 
-const origin = new URL(process.env.NEXT_PUBLIC_REST_API_ENDPOINT).origin
+const apiBaseUrl = process.env.NEXT_PUBLIC_REST_API_ENDPOINT.replace(
+  /\/api\/?$/,
+  ""
+)
 export const fetcher = Axios.create({
-  baseURL: origin,
+  baseURL: apiBaseUrl,
   ...axiosConfig,
 })
 

@@ -40,8 +40,8 @@ export function View({ className, ...props }: ComponentProps<"div">) {
   const router = useRouter()
   const { mutate, isPending } = useMutation(
     apiMutation.register.mutation({
-      onSuccess: ({ message }) => {
-        toast.success(message ?? "Registered Successfully")
+      onSuccess: () => {
+        toast.success("Registered successfully.")
         router.push("/dashboard")
       },
       onError: (error) => {
