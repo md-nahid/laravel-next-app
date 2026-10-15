@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -13,6 +14,8 @@ import {
   userBlocks,
 } from '../database/conversations.schema';
 import { users } from '../database/users.schema';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
+import type { MessageCreatedEvent } from '../realtime/realtime.types';
 import {
   createPaginatedResponse,
   resolvePaginationOptions,
@@ -23,7 +26,12 @@ const receiverTable = alias(users, 'receiver');
 
 @Injectable()
 export class ConversationsService {
-  constructor(private readonly database: DatabaseService) {}
+  private readonly logger = new Logger(ConversationsService.name);
+
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly realtime: RealtimeGateway,
+  ) {}
 
   async history(
     currentUserId: number,
@@ -155,6 +163,21 @@ export class ConversationsService {
     if (!conversation) {
       throw new Error('Conversation insert completed without a message row.');
     }
+    const event: MessageCreatedEvent = {
+      id: conversation.id,
+      sender_id: conversation.senderId,
+      receiver_id: conversation.receiverId,
+      created_at: (conversation.createdAt ?? now).toISOString(),
+    };
+    try {
+      this.realtime.notifyMessageCreated(event);
+    } catch (error) {
+      this.logger.error(
+        `Message ${conversation.id} was saved but its realtime notification failed.`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
+
     return {
       id: conversation.id,
       message: conversation.message,

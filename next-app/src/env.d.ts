@@ -1,6 +1,6 @@
 declare namespace NodeJS {
   interface ProcessEnv {
-    /** Public frontend URL with the same-origin API proxy path, e.g. https://app.vercel.app/backend */
+    /** NestJS API URL, e.g. http://localhost:3001/api */
     NEXT_PUBLIC_REST_API_ENDPOINT: string
   }
 }

@@ -82,16 +82,20 @@ or messages.
 | `POST` | `/api/conversations/:receiverId` | Session or bearer token | Sends a message, enforcing recipient existence, self-message, and block rules. |
 
 Cookie-authenticated writes require the `XSRF-TOKEN` cookie and matching
-`X-XSRF-TOKEN` header. Credentialed browser access is enabled for
-`CORS_ORIGINS` (comma-separated origins; default `http://localhost:3000`).
+`X-XSRF-TOKEN` header. Credentialed HTTP and Socket.IO access is enabled only
+for the exact origins in `CORS_ORIGINS` (comma-separated; default
+`http://localhost:3000`).
 Configure cookie SameSite/secure settings for the deployment's origin and
 HTTPS setup. Bearer tokens are stored as hashes and checked for expiry.
 
 Two-factor authentication is not currently implemented in NestJS.
 
-Messages are stored and returned through the REST API, but WebSocket-based
-realtime delivery is not implemented yet. The Next.js frontend currently polls
-for conversation updates.
+Messages are stored and returned through the REST API. After a message is
+saved, Nest emits a `message.created` Socket.IO notification to the
+authenticated recipient's user room. Socket.IO uses the same API host and port
+as HTTP (default `http://localhost:3001`); it does not require Laravel/Reverb.
+History remains REST-backed, and the client refetches it after notifications
+and reconnects.
 
 Check the service:
 

@@ -61,3 +61,10 @@ export type ConversationBroadcast = {
   created_at: string
   updated_at: string
 }
+
+export type MessageCreatedEvent = {
+  id: number
+  sender_id: number
+  receiver_id: number
+  created_at: string
+}

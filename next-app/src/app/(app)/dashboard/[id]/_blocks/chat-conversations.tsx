@@ -1,20 +1,23 @@
 "use client"
 
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { CheckCheck } from "lucide-react"
 import { apiQuery } from "@/_api/client"
 import type { Conversation } from "@/_api/types"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useChatRealtime } from "@/lib/use-chat-realtime"
 
 export function ChatConversations({ id }: { id: string }) {
+  const { data: user } = useQuery(apiQuery.me.query())
+  useChatRealtime({ currentUserId: user?.id, partnerId: id })
+
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useInfiniteQuery(
       apiQuery.chat.getConversation.query({
         param: id,
         enabled: !!id.toString(),
-        refetchInterval: 5_000,
         staleTime: 0,
       })
     )

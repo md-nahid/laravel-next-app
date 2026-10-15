@@ -6,13 +6,13 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { compare, hash } from 'bcryptjs';
-import { eq } from 'drizzle-orm';
+import { and, eq, gt, isNull, or } from 'drizzle-orm';
 import type { Response } from 'express';
 import { DatabaseService } from '../database/database.service';
 import { personalAccessTokens } from '../database/schema';
 import { users } from '../database/users.schema';
 import type { LoginDto, RegisterDto, StoreTokenDto } from './auth.dto';
-import type { AuthenticatedRequest } from './auth.types';
+import type { AuthenticatedRequest, AuthIdentity } from './auth.types';
 import { SessionService } from './session.service';
 
 interface AttemptWindow {
@@ -28,6 +28,72 @@ export class AuthService {
     private readonly database: DatabaseService,
     private readonly sessionService: SessionService,
   ) {}
+
+  async resolveIdentity(
+    request: Pick<AuthenticatedRequest, 'headers'>,
+  ): Promise<AuthIdentity | null> {
+    const authorization = request.headers.authorization;
+
+    if (authorization?.startsWith('Bearer ')) {
+      const plainTextToken = authorization.slice('Bearer '.length);
+      const separator = plainTextToken.indexOf('|');
+      if (separator <= 0) return null;
+
+      const id = Number(plainTextToken.slice(0, separator));
+      const secret = plainTextToken.slice(separator + 1);
+      if (!Number.isSafeInteger(id) || secret.length === 0) return null;
+
+      const [token] = await this.database.db
+        .select()
+        .from(personalAccessTokens)
+        .where(
+          and(
+            eq(personalAccessTokens.id, id),
+            eq(personalAccessTokens.tokenableType, 'App\\Models\\User'),
+            eq(
+              personalAccessTokens.token,
+              createHash('sha256').update(secret).digest('hex'),
+            ),
+            or(
+              isNull(personalAccessTokens.expiresAt),
+              gt(personalAccessTokens.expiresAt, new Date()),
+            ),
+          ),
+        )
+        .limit(1);
+      if (!token) return null;
+
+      const [user] = await this.database.db
+        .select()
+        .from(users)
+        .where(eq(users.id, token.tokenableId))
+        .limit(1);
+      if (!user) return null;
+
+      await this.database.db
+        .update(personalAccessTokens)
+        .set({ lastUsedAt: new Date() })
+        .where(eq(personalAccessTokens.id, id));
+
+      return { user, authType: 'token' };
+    }
+
+    const session = await this.sessionService.fromRequest(request);
+    if (!session?.userId) return null;
+
+    const [user] = await this.database.db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.userId))
+      .limit(1);
+    if (!user) return null;
+
+    return {
+      user,
+      authType: 'session',
+      authSession: { id: session.id, payload: session.payload },
+    };
+  }
 
   async register(
     input: RegisterDto,

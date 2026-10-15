@@ -22,6 +22,7 @@ import { ConversationsModule } from './conversations/conversations.module';
           .required(),
         CORS_ORIGINS: Joi.string().default('http://localhost:3000'),
         SESSION_COOKIE_NAME: Joi.string().default('nest_session'),
+        SESSION_COOKIE_DOMAIN: Joi.string().allow('').default(''),
         SESSION_SAME_SITE: Joi.string()
           .valid('strict', 'lax', 'none')
           .default('lax'),

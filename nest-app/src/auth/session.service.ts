@@ -12,6 +12,7 @@ const csrfCookieName = 'XSRF-TOKEN';
 @Injectable()
 export class SessionService {
   private readonly cookieName: string;
+  private readonly cookieDomain?: string;
   private readonly sameSite: CookieOptions['sameSite'];
   private readonly secure: boolean;
   private readonly lifetimeMinutes: number;
@@ -21,6 +22,8 @@ export class SessionService {
     config: ConfigService,
   ) {
     this.cookieName = config.get<string>('SESSION_COOKIE_NAME', 'nest_session');
+    this.cookieDomain =
+      config.get<string>('SESSION_COOKIE_DOMAIN')?.trim() || undefined;
     this.sameSite = config.get<CookieOptions['sameSite']>(
       'SESSION_SAME_SITE',
       'lax',
@@ -40,7 +43,7 @@ export class SessionService {
     this.setCookies(response, session.id, session.payload.csrfToken);
   }
 
-  async fromRequest(request: AuthenticatedRequest) {
+  async fromRequest(request: Pick<AuthenticatedRequest, 'headers'>) {
     const id = this.readCookie(request.headers.cookie, this.cookieName);
     if (!id) return null;
 
@@ -185,6 +188,7 @@ export class SessionService {
   private cookieOptions(): CookieOptions {
     return {
       path: '/',
+      ...(this.cookieDomain ? { domain: this.cookieDomain } : {}),
       sameSite: this.sameSite,
       secure: this.secure,
     };

@@ -1,8 +1,7 @@
 # Next.js chat frontend
 
 This is the Next.js frontend for the NestJS API in [`../nest-app`](../nest-app).
-The browser calls Nest through a same-origin Next.js rewrite at `/backend/*`.
-This keeps the session and CSRF cookies first-party; Nest handles authentication,
+The browser calls the NestJS API directly. Nest handles authentication,
 authorization, and database access.
 
 ## Onboarding: run the app locally
@@ -61,9 +60,11 @@ cp .env.example .env.local
 The example values work when Next.js and NestJS run directly on your computer:
 
 ```dotenv
-NEXT_PUBLIC_REST_API_ENDPOINT=/backend/api
-NEST_API_INTERNAL_URL=http://localhost:3001
+NEXT_PUBLIC_REST_API_ENDPOINT=http://localhost:3001/api
 ```
+
+If `.env.local` already exists, update `NEXT_PUBLIC_REST_API_ENDPOINT` there;
+Next.js does not replace existing environment files when the example is edited.
 
 Start the frontend:
 
@@ -85,16 +86,25 @@ the app.
 
 ## How the frontend connects to NestJS
 
-`NEXT_PUBLIC_REST_API_ENDPOINT=/backend/api` is the browser-facing API base.
-Next.js rewrites `/backend/:path*` to the server-side
-`NEST_API_INTERNAL_URL`. The browser does not call the Nest origin directly.
+`NEXT_PUBLIC_REST_API_ENDPOINT` is the browser-facing NestJS API base.
 Login and registration initialize CSRF/session cookies through
-`/backend/csrf-cookie`; feature requests use `/backend/api/*`.
+`http://localhost:3001/csrf-cookie`; feature requests use
+`http://localhost:3001/api/*`. Set the variable to the public NestJS API URL
+when deploying; it must be reachable from the user's browser.
 
-If Next.js runs in a container, set `NEST_API_INTERNAL_URL` to an address
-reachable from that container (for example, the Nest service DNS name instead
-of `localhost`). Keep this variable server-side; do not rename it to a
-`NEXT_PUBLIC_` variable.
+Because these requests are cross-origin, Nest's `CORS_ORIGINS` must include the
+exact frontend origin and allow credentials. In local development, the
+frontend and API both use `localhost`, so their cookies are shared across the
+different ports. In production, use HTTPS and configure the Nest session
+cookie domain so the frontend can read the CSRF cookie (for example,
+`.example.com` when the frontend and API use sibling subdomains). See the
+authentication notes for cookie and CORS requirements.
+
+Realtime chat connects Socket.IO to the origin of
+`NEXT_PUBLIC_REST_API_ENDPOINT` (locally `http://localhost:3001`) and uses the
+existing session cookie. Keep that API origin in Nest's `CORS_ORIGINS`; the
+server validates the browser's WebSocket origin and authenticates the session
+before joining the user's private room.
 
 ## Stopping local services
 
@@ -114,8 +124,8 @@ down -v` unless you intend to delete that volume and its data.
 - Authentication uses Nest-managed server-side sessions and CSRF-protected
   cookies.
 - User lookup, blocking, messaging, and conversation history use the Nest API.
-- Realtime messaging is not implemented in Nest yet; the chat view polls for
-  conversation updates every five seconds while active.
+- Chat updates arrive over authenticated Socket.IO notifications; REST remains
+  the source of truth for conversation history.
 - Two-factor authentication is not currently implemented.
 - The Nest database is separate and starts without existing users or messages.
   Laravel data and accounts are not automatically copied over.

@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import type { LoginDto, RegisterDto, StoreTokenDto } from './auth.dto';
+import { LoginDto, RegisterDto, StoreTokenDto } from './auth.dto';
 import { AuthGuard, CsrfGuard } from './auth.guards';
 import { AuthService } from './auth.service';
 import type { AuthenticatedRequest } from './auth.types';

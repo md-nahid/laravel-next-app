@@ -28,11 +28,11 @@ export function ChatForm({ id }: { id: string }) {
   const { mutate, isPending } = useMutation(
     apiMutation.chat.send.mutation({
       param: id,
-      onSuccess: (response) => {
+      onSuccess: () => {
         form.reset()
-        toast.success(response.message)
+        // toast.success(response.message)
         queryClient.invalidateQueries({
-          queryKey: apiQuery.chat.getConversation.key(),
+          queryKey: apiQuery.chat.getConversation.key(id),
         })
       },
       onError: (error) => {

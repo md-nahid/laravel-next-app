@@ -1,12 +1,18 @@
 import { type INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { and, eq, inArray } from 'drizzle-orm';
+import type { Server as HttpServer } from 'node:http';
+import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
+import { getCorsOrigins } from '../src/common/cors-origins';
 import { DatabaseService } from '../src/database/database.service';
 import { personalAccessTokens, sessions } from '../src/database/schema';
 import { users } from '../src/database/users.schema';
+import { ConfiguredIoAdapter } from '../src/realtime/configured-io.adapter';
+import type { MessageCreatedEvent } from '../src/realtime/realtime.types';
 import { createApiValidationPipe } from '../src/validation.pipe';
 
 interface BrowserSession {
@@ -25,8 +31,11 @@ describe('Nest API with isolated PostgreSQL (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useWebSocketAdapter(
+      new ConfiguredIoAdapter(app, getCorsOrigins(app.get(ConfigService))),
+    );
     app.useGlobalPipes(createApiValidationPipe());
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     database = app.get(DatabaseService);
   });
 
@@ -46,6 +55,25 @@ describe('Nest API with isolated PostgreSQL (e2e)', () => {
       await database.db.delete(users).where(inArray(users.id, createdUserIds));
     }
     await app?.close();
+  });
+
+  it('disconnects socket clients without a valid session', async () => {
+    const socket = createSocket();
+    const disconnected = new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error('Unauthenticated socket stayed connected.')),
+        3000,
+      );
+      socket.once('disconnect', () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+    });
+
+    socket.connect();
+    await disconnected;
+    expect(socket.connected).toBe(false);
+    socket.disconnect();
   });
 
   it('registers users and exercises session, CSRF, search, blocking, messages, deletion, and bearer auth', async () => {
@@ -113,15 +141,39 @@ describe('Nest API with isolated PostgreSQL (e2e)', () => {
         expect(body.is_blocking_me).toBe(false);
       });
 
-    const firstMessage = await request(server())
-      .post(`/api/conversations/${secondUser.id}`)
-      .set('Cookie', firstSession.cookie)
-      .set('X-XSRF-TOKEN', firstSession.csrfToken)
-      .send({ message: 'First message' })
-      .expect(201);
-    expect((firstMessage.body as { message: string }).message).toBe(
-      'First message',
-    );
+    const recipientSocket = await connectSocket(secondSession.cookie);
+    try {
+      const event = new Promise<MessageCreatedEvent>((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(new Error('Timed out waiting for message.created.')),
+          3000,
+        );
+        recipientSocket.once(
+          'message.created',
+          (payload: MessageCreatedEvent) => {
+            clearTimeout(timeout);
+            resolve(payload);
+          },
+        );
+      });
+
+      const sentMessage = await request(server())
+        .post(`/api/conversations/${secondUser.id}`)
+        .set('Cookie', firstSession.cookie)
+        .set('X-XSRF-TOKEN', firstSession.csrfToken)
+        .send({ message: 'First message' })
+        .expect(201);
+      expect((sentMessage.body as { message: string }).message).toBe(
+        'First message',
+      );
+      await expect(event).resolves.toMatchObject({
+        id: (sentMessage.body as { id: number }).id,
+        sender_id: firstUser.id,
+        receiver_id: secondUser.id,
+      });
+    } finally {
+      recipientSocket.disconnect();
+    }
 
     await request(server())
       .post(`/api/conversations/${firstUser.id}`)
@@ -305,5 +357,41 @@ describe('Nest API with isolated PostgreSQL (e2e)', () => {
   function server() {
     if (!app) throw new Error('Nest application has not been initialized.');
     return app.getHttpServer();
+  }
+
+  async function connectSocket(cookie: string): Promise<Socket> {
+    const socket = createSocket(cookie);
+
+    return new Promise((resolve, reject) => {
+      const onConnect = () => {
+        socket.off('connect_error', onError);
+        resolve(socket);
+      };
+      const onError = (error: Error) => {
+        socket.off('connect', onConnect);
+        socket.disconnect();
+        reject(error);
+      };
+      socket.once('connect', onConnect);
+      socket.once('connect_error', onError);
+      socket.connect();
+    });
+  }
+
+  function createSocket(cookie?: string): Socket {
+    const address = (server() as HttpServer).address();
+    if (!address || typeof address === 'string') {
+      throw new Error('Expected Nest HTTP server to listen on a TCP port.');
+    }
+    return io(`http://127.0.0.1:${address.port}`, {
+      autoConnect: false,
+      reconnection: false,
+      timeout: 3000,
+      transports: ['websocket'],
+      extraHeaders: {
+        ...(cookie ? { Cookie: cookie } : {}),
+        Origin: 'http://localhost:3000',
+      },
+    });
   }
 });
