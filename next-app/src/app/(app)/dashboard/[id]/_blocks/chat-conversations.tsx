@@ -1,26 +1,47 @@
 "use client"
 
+import { useEffect, useRef } from "react"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { CheckCheck } from "lucide-react"
 import { apiQuery } from "@/_api/client"
 import type { Conversation } from "@/_api/types"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { useStickToBottomContext } from "use-stick-to-bottom"
 import { cn } from "@/lib/utils"
 import { useChatRealtime } from "@/lib/use-chat-realtime"
 
 export function ChatConversations({ id }: { id: string }) {
   const { data: user } = useQuery(apiQuery.me.query())
   useChatRealtime({ currentUserId: user?.id, partnerId: id })
+  const { scrollToBottom } = useStickToBottomContext()
 
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useInfiniteQuery(
       apiQuery.chat.getConversation.query({
         param: id,
+        params: { per_page: 20 },
         enabled: !!id.toString(),
         staleTime: 0,
       })
     )
+  const latestConversationId = data?.at(-1)?.id
+  const previousChat = useRef<{ id: string; latestId?: number } | null>(null)
+
+  useEffect(() => {
+    if (latestConversationId === undefined) return
+
+    const isNewChat = previousChat.current?.id !== id
+    const isInitialLoad = previousChat.current?.latestId === undefined
+    const hasNewMessage = previousChat.current?.latestId !== latestConversationId
+    previousChat.current = { id, latestId: latestConversationId }
+
+    if (isNewChat || isInitialLoad) {
+      void scrollToBottom({ animation: "instant" })
+    } else if (hasNewMessage) {
+      void scrollToBottom({ animation: "smooth", preserveScrollPosition: true })
+    }
+  }, [id, latestConversationId, scrollToBottom])
 
   return (
     <div className="flex min-h-full flex-col justify-end pt-6">

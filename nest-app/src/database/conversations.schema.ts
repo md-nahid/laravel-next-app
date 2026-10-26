@@ -32,6 +32,16 @@ export const conversations = pgTable(
       foreignColumns: [users.id],
       name: 'conversations_receiver_id_foreign',
     }).onDelete('cascade'),
+    index('conversations_sender_id_receiver_id_id_index').on(
+      table.senderId,
+      table.receiverId,
+      table.id,
+    ),
+    index('conversations_receiver_id_sender_id_id_index').on(
+      table.receiverId,
+      table.senderId,
+      table.id,
+    ),
   ],
 );
 

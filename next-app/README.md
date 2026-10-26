@@ -4,6 +4,9 @@ This is the Next.js frontend for the NestJS API in [`../nest-app`](../nest-app).
 The browser calls the NestJS API directly. Nest handles authentication,
 authorization, and database access.
 
+For production deployment to Vercel with Neon and a persistent NestJS host,
+see the [deployment guide](./docs/deployment.md).
+
 ## Onboarding: run the app locally
 
 ### Prerequisites

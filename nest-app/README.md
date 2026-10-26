@@ -4,6 +4,9 @@ This is the standalone NestJS backend used by the Next.js frontend in
 `../next-app`. It runs against its own PostgreSQL database and does not require
 or import Laravel application data.
 
+For production deployment with Neon and the Next.js frontend on Vercel, see the
+[deployment guide](../next-app/docs/deployment.md).
+
 ## Stack
 
 - NestJS 11 and TypeScript

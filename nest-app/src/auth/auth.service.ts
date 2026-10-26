@@ -107,7 +107,7 @@ export class AuthService {
       );
     }
 
-    const email = input.email;
+    const email = input.email.trim().toLowerCase();
     const password = await hash(input.password, 12);
     const now = new Date();
     let user: typeof users.$inferSelect | undefined;
@@ -145,7 +145,7 @@ export class AuthService {
     request: AuthenticatedRequest,
     response: Response,
   ) {
-    const email = input.email;
+    const email = input.email.trim().toLowerCase();
     this.checkLoginRate(email, request.ip ?? 'unknown');
 
     const [user] = await this.database.db
@@ -172,7 +172,7 @@ export class AuthService {
   }
 
   async issueToken(input: StoreTokenDto, request: AuthenticatedRequest) {
-    const email = input.email;
+    const email = input.email.trim().toLowerCase();
     const ip = request.ip ?? 'unknown';
     this.checkLoginRate(email, ip);
     const [user] = await this.database.db

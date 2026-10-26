@@ -8,6 +8,13 @@
       "when": 1791777742912,
       "tag": "0000_laravel_schema_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793026299818,
+      "tag": "0001_case_insensitive_emails_conversation_indexes",
+      "breakpoints": true
     }
   ]
 }

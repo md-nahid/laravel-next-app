@@ -1,9 +1,10 @@
+import { sql } from 'drizzle-orm';
 import {
   bigserial,
   pgTable,
   text,
   timestamp,
-  unique,
+  uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
 
@@ -28,7 +29,9 @@ export const users = pgTable(
     createdAt: timestamp('created_at', { mode: 'date', precision: 0 }),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 0 }),
   },
-  (table) => [unique('users_email_unique').on(table.email)],
+  (table) => [
+    uniqueIndex('users_email_lower_unique').on(sql`lower(${table.email})`),
+  ],
 );
 
 export type User = typeof users.$inferSelect;

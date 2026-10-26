@@ -30,7 +30,6 @@ export function ChatForm({ id }: { id: string }) {
       param: id,
       onSuccess: () => {
         form.reset()
-        // toast.success(response.message)
         queryClient.invalidateQueries({
           queryKey: apiQuery.chat.getConversation.key(id),
         })
